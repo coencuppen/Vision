@@ -11,9 +11,7 @@ def getData():
     for filename in os.listdir('assets'):
         if filename.endswith('.jpg') or filename.endswith('.JPG'):
             img_path = os.path.join('assets', filename)
-            img = Image.open(img_path)
-            img_array = np.array(img)
-            images.append(img_array)
+            images.append(np.array(Image.open(img_path)))
             counter += 1
     return np.array(images)
 
