@@ -4,7 +4,7 @@ from PIL import Image
 import json
 
 
-def getTrainData():
+def getData():
     images = []
     print("getting training data")
     counter = 0
@@ -24,6 +24,5 @@ def getLabels():
     with open('coordinates.json', 'r') as f:
         data = json.load(f)
         for name in data["pictures"]:
-            print(name)
             labels.append([data["pictures"][name][0]["begin"], data["pictures"][name][0]["end"]])
     return np.array(labels)
