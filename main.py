@@ -2,7 +2,7 @@ import bunnyfinder
 
 
 def main():
-    bunnyfinder.bunnyfinder()
+    bunnyfinder
 
 
 if __name__ == '__main__':
