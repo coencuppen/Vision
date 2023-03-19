@@ -48,18 +48,20 @@ pretrained_model_without_top_layer = hub.KerasLayer(
 
 model = tf.keras.Sequential([
     pretrained_model_without_top_layer,
-    tf.keras.layers.Dense(2)
+    tf.keras.layers.Dense(1)
 ])
 
 model.summary()
 
 model.compile(
-    optimizer="adam",
-    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+    loss='binary_crossentropy',
     metrics=['acc'])
 
-model.fit(X_train_scaled, y_train, epochs=5)
+try:
+    model.fit(X_train_scaled, y_train, epochs=8, validation_split=0.2)
 
+except:
+    pass
 
-def evaluate(self):
-    print(self.model.evaluate(self.testData, to_categorical(self.testLabels), verbose=2))
+print(model.evaluate(X_test_scaled, y_test, verbose=2))

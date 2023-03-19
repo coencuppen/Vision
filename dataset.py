@@ -1,5 +1,7 @@
 import numpy as np
 import os
+
+import scipy.ndimage
 from PIL import Image
 import json
 from matplotlib import pyplot as plt, patches
@@ -11,7 +13,7 @@ def getPictures(directory, size=None):
     images = []
     print("getting", directory)
     for filename in os.listdir(directory):
-        #print(filename)
+        # print(filename)
         if filename.endswith('.jpg') or filename.endswith('.JPG'):
             img_path = os.path.join(directory, filename)
             if size:
@@ -85,3 +87,25 @@ def drawAndSave(image, nmbr):
 def draw(image, label):
     getAx(image, label)
     plt.show()
+
+
+def findBunny(image):
+    image = np.mean(image, axis=-1)/255
+
+    earMask = [[0, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, -2, 0, 0, 0],
+               [0, 0, -1, 4, -1, 0, 0],
+               [0, 0, -1, 8, -1, 0, 0],
+               [0, 0, -1, 4, -1, 0, 0],
+               [0, 0, 0, -2, 0, 0, 0],
+               [0, 0, 0, 0, 0, 0, 0]]
+    newImage = scipy.ndimage.convolve(image, earMask)
+    print(image)
+    plt.imshow(newImage)
+    plt.axis('off')
+    plt.show()
+
+
+photos = getPictures('assets')
+findBunny(photos[0])
+exit()
