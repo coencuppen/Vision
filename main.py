@@ -1,20 +1,21 @@
-import numpy as np
-
 import bunnyfinder
 import dataset
-import cv2
 
+def more():
+    labels = dataset.getLabels()
+    dataset.cutBunnies(labels)
 
 def main():
     bunnyfinder.train()  # Train a model
-    #bunnyfinder.predict(bunnyfinder.bunniesArray[0:3])
-    #bunnyfinder.predict(bunnyfinder.randomPicturesArray[0:3])
-    photos = dataset.getPictures('assets')
-    bunnies = []
-    for i in range(len(photos)):
-        bunnies.append(dataset.findBunny(photos[i], name=i))
 
-    bunnyfinder.predict(bunnies)
+    photos = dataset.getPictures('assets')
+    for i in range(len(photos)):
+        bunnyCandidate, coordinates = dataset.findBunny(photos[i], name=i)
+        prediction = bunnyfinder.predict(bunnyCandidate)[0][0]
+        print('prediction', prediction)
+
+        dataset.drawAndSave(photos[i], coordinates, 'output/', i, text=prediction.__str__())
+
 
 if __name__ == '__main__':
     main()

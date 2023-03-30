@@ -49,7 +49,7 @@ def cutBunnies(labels):
             image = Image.open(img_path)
             img_cropped = image.crop((labels[counter][0][0], labels[counter][0][1],
                                       labels[counter][1][0], labels[counter][1][1]))
-            drawAndSave(np.array(img_cropped), counter)
+            drawAndSave(np.array(img_cropped), name=counter + 267, path='morerandompictures/')
             counter += 1
 
     bunniesArray = np.array(images)
@@ -73,19 +73,29 @@ def max_pooling(image, n):
     return outputArray
 
 
-def getAx(image, label):
+def getAx(image, label, labelType='list'):
     fig, ax = plt.subplots()
     ax.imshow(image)
-    boundingBox = patches.Rectangle((label[0][0], label[0][1]), label[1][0] - label[0][0], label[1][1] - label[0][1],
-                                    linewidth=1, edgecolor='r', facecolor='none')
+
+    if labelType == 'list':
+        boundingBox = patches.Rectangle((label[0], label[1]), label[2] - label[0], label[3] - label[1],
+                                        linewidth=1, edgecolor='r', facecolor='none')
+
+    else:
+        boundingBox = patches.Rectangle((label[0][0], label[0][1]), label[1][0] - label[0][0],
+                                        label[1][1] - label[0][1],
+                                        linewidth=1, edgecolor='r', facecolor='none')
     ax.add_patch(boundingBox)
 
 
-def drawAndSave(image, path,  nmbr):
-    name = nmbr.__str__() + ".jpg"
-    cv2.imwrite(path.__str__() + name, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-    # getAx(image, label)
-    # plt.savefig("bunnies/" + name.__str__())
+def drawAndSave(image, label=None, path=None, name=None, text=""):
+    name = name.__str__() + ".jpg"
+    # cv2.imwrite(path.__str__() + name, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+    getAx(image, label)
+    plt.axis('off')
+    plt.text(label[0], (label[1] - 5), text)
+    plt.savefig(path + name.__str__())
+    plt.close()
 
 
 def draw(image, label):
@@ -95,8 +105,6 @@ def draw(image, label):
 
 def findBunny(image, scale=1, poolingScale=255, name=None):
     global coordinateBunny
-
-
 
     imageGray = np.mean(image, axis=-1) / 255
 
@@ -143,17 +151,17 @@ def findBunny(image, scale=1, poolingScale=255, name=None):
                                    (y + 1) * poolingScale.__int__())
 
     croppedImage = image[coordinateBunny[1]:coordinateBunny[3], coordinateBunny[0]:coordinateBunny[2]]
-    #plt.imshow(image)
-    #plt.axis('off')
-    #plt.show()
-    #plt.imshow(poolingImage)
-    #plt.axis('off')
-    #plt.show()
-    #plt.imshow(croppedImage)
-    #plt.axis('off')
-    #plt.show()
-    #drawAndSave(croppedImage, 'bunniesFound/', name)
-    return croppedImage
+    # plt.imshow(image)
+    # plt.axis('off')
+    # plt.show()
+    # plt.imshow(poolingImage)
+    # plt.axis('off')
+    # plt.show()
+    # plt.imshow(croppedImage)
+    # plt.axis('off')
+    # plt.show()
+    # drawAndSave(croppedImage, 'bunniesFound/', name)
+    return croppedImage, coordinateBunny
 
 
 def createMask(image):
