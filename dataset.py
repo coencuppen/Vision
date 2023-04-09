@@ -12,7 +12,7 @@ import bunnyfinder
 import cv2
 
 
-def getPictures(directory, size=None, number=None):
+def getPictures(directory, size=None, number=None, normilized=True):
     # this function reads all the .jpg images from a given folden, and returns a np.array with all the images
     images = []
     counter = 1
@@ -23,17 +23,23 @@ def getPictures(directory, size=None, number=None):
             img_path = os.path.join(directory, filename)
             if size:
                 image = Image.open(img_path)
-                longer_side = max(image.width, image.height)
-                new_image = Image.new('RGB', (longer_side, longer_side), (0, 0, 0))
-                x_offset = (longer_side - image.width) // 2
-                y_offset = (longer_side - image.height) // 2
-                new_image.paste(image, (x_offset, y_offset))
-                new_image = new_image.convert('L')
-                image = np.array(new_image.resize(size)) / 255
+                if normilized:
+                    longer_side = max(image.width, image.height)
+                    new_image = Image.new('RGB', (longer_side, longer_side), (0, 0, 0))
+                    x_offset = (longer_side - image.width) // 2
+                    y_offset = (longer_side - image.height) // 2
+                    new_image.paste(image, (x_offset, y_offset))
+                    new_image = new_image.convert('L')
+                    image = np.array(new_image.resize(size)) / 255
+                else:
+                    image = np.array(image)
             else:
                 image = Image.open(img_path)
-                new_image = image.convert('L')
-                image = np.array(new_image) / 255
+                if normilized:
+                    new_image = image.convert('L')
+                    image = np.array(new_image) / 255
+                else:
+                    image = np.array(image)
 
             images.append(image)
             if counter == number:
@@ -77,9 +83,9 @@ def cutBunnies(labels):
         if filename.endswith('.jpg') or filename.endswith('.JPG'):
             img_path = os.path.join('assets', filename)
             image = Image.open(img_path)
-            img_cropped = image.crop((labels[counter][0][0] + 650, labels[counter][0][1]-250,
-                                      labels[counter][1][0] + 650, labels[counter][1][1]-250))
-            drawAndSave(np.array(img_cropped), name=counter + 1212, path='moreRandomPictures/')
+            img_cropped = image.crop((labels[counter][0][0], labels[counter][0][1],
+                                      labels[counter][1][0], labels[counter][1][1]))
+            drawAndSave(np.array(img_cropped), name=counter, path='bunnies/')
             counter += 1
 
     bunniesArray = np.array(images)
@@ -137,7 +143,7 @@ def draw(image, label):
     plt.show()
 
 
-def findBunny(image, scale=1, poolingScale=255, name=None, candidate=0):
+def findBunny(image, scale=1, poolingScale=[255, 255], name=None, candidate=0):
     global coordinateBunny
 
     maskEdge = [[0, -1, 0],
@@ -159,7 +165,7 @@ def findBunny(image, scale=1, poolingScale=255, name=None, candidate=0):
 
     newImage = scipy.ndimage.convolve(newImage, maskBunny)
 
-    poolingImage = max_pooling(newImage, poolingScale)
+    poolingImage = max_pooling(newImage, poolingScale[0])
 
     candidates = []
     for i in poolingImage:
@@ -172,10 +178,11 @@ def findBunny(image, scale=1, poolingScale=255, name=None, candidate=0):
     for y in range(len(poolingImage)):
         for x in range(len(poolingImage[1])):
             if poolingImage[y][x] == candidate:
-                coordinateBunny = (x * poolingScale.__int__(),
-                                   y * poolingScale.__int__(),
-                                   (x + 1) * poolingScale.__int__(),
-                                   (y + 1) * poolingScale.__int__() + poolingScale)
+                coordinateBunny = (x * poolingScale[0].__int__(),
+                                   y * poolingScale[0].__int__(),
+                                   (x + 1) * poolingScale[0].__int__(),
+                                   (y + 1) * (poolingScale[0].__int__()) + (
+                                               poolingScale[1] - poolingScale[0]).__int__())
 
     croppedImage = image[coordinateBunny[1]:coordinateBunny[3], coordinateBunny[0]:coordinateBunny[2]]
 
@@ -188,21 +195,26 @@ def findBunny(image, scale=1, poolingScale=255, name=None, candidate=0):
     x_offset = (longer_side - width) // 2
     y_offset = (longer_side - height) // 2
 
+    # generate a square image to prevent stretching
     for h in range(len(newImage)):
+        if h >= height:
+            break
         for w in range(len(newImage[0])):
             if w >= width + x_offset:
                 break
             if w > x_offset:
                 newImage[h][w] = imageArr[h][w - x_offset]
 
-    #plt.imshow(newImage)
-    #plt.show()
-    #plt.imshow(poolingImage)
-    #plt.axis('off')
-    #plt.show()
-    #plt.imshow(croppedImage)
-    #plt.axis('off')
-    #plt.show()
+    # plt.imshow(newImage)
+    # plt.show()
+    # plt.imshow(poolingImage)
+    # plt.title(poolingScale.__str__())
+    # plt.savefig(poolingScale.__str__())
+    # plt.axis('off')
+    # plt.show()
+    # plt.imshow(croppedImage)
+    # plt.axis('off')
+    # plt.show()
     # drawAndSave(croppedImage, 'bunniesFound/', name)
     return newImage, coordinateBunny
 
